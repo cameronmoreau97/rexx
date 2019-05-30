@@ -1,0 +1,56 @@
+/**REXX**/                                             
+/** Written by Cameron Moreau **/                      
+                                                       
+/** Clears the screen **/                              
+CLRSCN                                                 
+dropbuf                                                
+/** Asks user for custom DSN or exit **/               
+SAY "ENTER THE NAME OF YOUR SEQ DATASET OR 'EXIT'"     
+  PULL INPUT                                           
+                                                       
+/** If user enters 'EXIT' then exit the program **/    
+    IF INPUT = "EXIT" THEN                             
+      DO                                               
+        SAY "GOODBYE"                                  
+        EXIT                                           
+      END                                              
+                                                     
+/** Stores entered DSN as variable **/                         
+ DSN = INPUT                                                    
+                                                                
+ /** Checks if dataset name is free to use **/                  
+ IF SYSDSN("'" ||DSN|| "'")\="OK" THEN                          
+   DO                                                           
+     say 'Allocating...'                                        
+     alloc = 'YES'                                              
+     "alloc da('" ||DSN|| "')  dsorg(ps) fi(outdd)",            
+     "space (1,1) recfm(f,b) lrecl(80) track blksize(8000)"     
+   END                                                          
+                                                                
+ /** If dataset name is in use inform user and exit program **/ 
+ ELSE                                                           
+   DO                                                           
+     SAY 'DATASET NAME ALREADY IN USE'                          
+     EXIT   
+        END                                                        
+                                                              
+ /** Prompt for entry into dataset and how many times **/     
+ IF translate(alloc) = "YES" THEN                             
+   DO                                                         
+     SAY 'WHAT WOULD YOU LIKE TO ENTER IN THE DATASET?'       
+     PULL INPUT2                                              
+     SAY 'HOW MANY TIMES DO YOU WANT THAT ENTERED?'           
+     PULL INPUT3                                              
+   END                                                        
+                                                              
+ /** Queue given entry the number of times specified **/      
+ DO I=1 TO INPUT3                                             
+   QUEUE INPUT2                                               
+ END                                                          
+                                                              
+ /** Write the entry into dataset **/                         
+ "execio * diskw outdd (finis"     
+ "free fi(outdd)"                                           
+                                                           
+say "Allocated dataset and entered "input2 input3" times!" 
+exit                                                       
